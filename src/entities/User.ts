@@ -1,30 +1,31 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+
 import { Field, ObjectType } from "type-graphql";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
+
 
 @ObjectType()
 @Entity() 
-export class User { // we expose some fields and hide the others to a graphql schema
+export class User extends BaseEntity {
   @Field()
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @Field(() => String)
-  @Property({type: 'date'})
-  createdAt = new Date();
+  @CreateDateColumn()
+  createdAt: Date;
 
   @Field(() => String)
-  @Property({ type: 'date', onUpdate: () => new Date() }) 
-  updatedAt = new Date();
+  @UpdateDateColumn() 
+  updatedAt: Date;
 
   @Field()
-  @Property({ type: 'text', unique: true })
+  @Column({ unique: true })
   username!: string;
 
   @Field()
-  @Property({ type: 'text', unique: true })
+  @Column({ unique: true })
   email!: string;
 
-  // removed the field property => it is not allowed to select password, we're only creating password as a DB column
-  @Property({ type: 'text' })
+  @Column()
   password!: string;
 }

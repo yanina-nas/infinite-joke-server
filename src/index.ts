@@ -1,8 +1,5 @@
-import { MikroORM } from "@mikro-orm/core";
-import { COOKIE_NAME, __prod__ } from "./constants";
 import "reflect-metadata";
-// import { Post } from "./entities/Post";
-import microConfig from './mikro-orm.config';
+import { COOKIE_NAME, __prod__ } from "./constants";
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { HelloResolver } from "./resolvers/hello";
@@ -13,19 +10,30 @@ import Redis from 'ioredis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
-// import { sendEmail } from "./utils/sendEmail";
+import { createConnection } from 'typeorm';
+import { Post } from "./entities/Post";
+import { User } from "./entities/User";
+
+
 
 
 const main = async () => {
-    const orm = await MikroORM.init(microConfig);
-    await orm.getMigrator().up(); // runs migrations before it does anything else, it's not rerunning old migrations. keeps track of migrations that were run. in db mikro-orm-migrations
-
+    const conn = await createConnection({
+        type: 'postgres',
+        database: 'infinite-joke',
+        username: 'postgres',
+        password: 'example',
+        logging: true,
+        synchronize: true,
+        entities: [Post, User]
+    });
+    
     const app = express();
 
     const RedisStore = connectRedis(session);
     const redis = new Redis();
     app.use(cors({
-        origin: "http://localhost:3000", // middleware will bw applied to all the routes
+        origin: "http://localhost:3000", // middleware will be applied to all the routes
         credentials: true,
     }))
 
@@ -54,7 +62,7 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ em: orm.em, req, res, redis })
+        context: ({ req, res }) => ({ req, res, redis })
     });
 
     apolloServer.applyMiddleware({ app, cors: false }); // if not set, defaults to a star => error

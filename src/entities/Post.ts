@@ -1,22 +1,22 @@
-import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
 import { Field, ObjectType } from "type-graphql";
 
 @ObjectType() // stacking decorators
-@Entity() // tells mikro-orm: this is an entity = corresponds to a table
-export class Post {
+@Entity() // tells to orm: this is an entity = corresponds to a table
+export class Post extends BaseEntity {
   @Field()
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @Field(() => String)
-  @Property({type: 'date'})
-  createdAt = new Date();
+  @CreateDateColumn()
+  createdAt: Date;
 
   @Field(() => String)
-  @Property({ type: 'date', onUpdate: () => new Date() }) 
-  updatedAt = new Date();
+  @UpdateDateColumn() 
+  updatedAt: Date;
 
-  @Field() // if i comment out this field it would be no longer exposed/availible to graphql schema
-  @Property({type: 'text'}) // decorates: tells that this is a column
+  @Field()
+  @Column()
   title!: string;
 }
